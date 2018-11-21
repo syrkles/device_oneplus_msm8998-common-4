@@ -33,6 +33,30 @@ on boot
     write /dev/cpuset/background/cpus 0-7
     write /dev/cpuset/system-background/cpus 0-7
 
+on charger
+    # Enable UFS powersaving
+    write /sys/devices/soc/1da4000.ufshc/clkscale_enable 1
+    write /sys/devices/soc/1da4000.ufshc/clkgate_enable 1
+    write /sys/devices/soc/1da4000.ufshc/hibern8_on_idle_enable 1
+
+    write /sys/module/lpm_levels/parameters/sleep_disabled N
+
+    # disable thermal core control
+    write /sys/module/msm_thermal/core_control/enabled 0
+
+    # online cpu 0 and set governor powersave
+    write /sys/devices/system/cpu/cpu0/online 1
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor powersave
+
+    # offline remaining cores
+    write /sys/devices/system/cpu/cpu1/online 0
+    write /sys/devices/system/cpu/cpu2/online 0
+    write /sys/devices/system/cpu/cpu3/online 0
+    write /sys/devices/system/cpu/cpu4/online 0
+    write /sys/devices/system/cpu/cpu5/online 0
+    write /sys/devices/system/cpu/cpu6/online 0
+    write /sys/devices/system/cpu/cpu7/online 0
+
 on late-fs
     # Enable boot time fs tuning (ro like system is on sda, rw like userdata is on sde)
     write /sys/block/sda/queue/iostats 0
@@ -43,6 +67,14 @@ on late-fs
     write /sys/block/sda/queue/read_ahead_kb 2048
 
 on property:sys.boot_completed=1
+    # Disable boot time fs tuning
+    write /sys/block/sde/queue/read_ahead_kb 1024
+    write /sys/block/sde/queue/nr_requests 128
+    write /sys/block/sde/queue/iostats 1
+    write /sys/block/sda/queue/read_ahead_kb 1024
+    write /sys/block/sda/queue/nr_requests 128
+    write /sys/block/sda/queue/iostats 1
+
     # Enable UFS powersaving
     write /sys/devices/soc/1da4000.ufshc/clkscale_enable 1
     write /sys/devices/soc/1da4000.ufshc/clkgate_enable 1
@@ -51,29 +83,40 @@ on property:sys.boot_completed=1
     # disable thermal core control until CPU is configured
     write /sys/module/msm_thermal/core_control/enabled 0
 
-    # I/O On Boot
-	write /sys/block/sda/queue/iostats 0
-	write /sys/block/sda/queue/scheduler anxiety
-	write /sys/block/sda/queue/iosched/slice_idle 0
-	write /sys/block/sda/queue/read_ahead_kb 1536
-	write /sys/block/sda/queue/nr_requests 256
-	write /sys/block/sde/queue/iostats 0
-	write /sys/block/sde/queue/scheduler anxiety
-	write /sys/block/sde/queue/iosched/slice_idle 0
-	write /sys/block/sde/queue/read_ahead_kb 1536
-	write /sys/block/sde/queue/nr_requests 256
-
-    #Set Governor and tuneables
-	write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "schedutil"
-	write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "schedutil"
+    # online little cluster
+    write /sys/devices/system/cpu/cpu0/online 1
+    # configure governor settings for little cluster
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_sched_load 1
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_migration_notif 1
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay 19000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 90
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 20000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 1248000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy 1
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "83 1804800:95"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 19000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis 79000
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/ignore_hispeed_on_notif 1
+
+    # online big cluster
+    write /sys/devices/system/cpu/cpu4/online 1
+    # configure governor settings for big cluster
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "interactive"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_sched_load 1
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_migration_notif 1
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay 19000
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 90
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate 20000
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 1574400
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy 1
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "83 1939200:90 2016000:95"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 19000
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis 79000
     write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 300000
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1900800
-    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1958400
-	write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us 1000
-	write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/down_rate_limit_us 6000
-	write /sys/devices/system/cpu/cpu4/cpufreq/schedutil/up_rate_limit_us 2000
-	write /sys/devices/system/cpu/cpu4/cpufreq/schedutil/down_rate_limit_us 6000
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/ignore_hispeed_on_notif 1
+
     # Core Control
     write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 2
     write /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres 60
@@ -83,12 +126,11 @@ on property:sys.boot_completed=1
     write /sys/devices/system/cpu/cpu4/core_ctl/task_thres 4
 
     # CPU is configured, re-enable thermal core control
-    write /sys/module/msm_thermal/core_control/enabled 0
+    write /sys/module/msm_thermal/core_control/enabled 1
 
-    # Input boost configuration
-	write /sys/module/cpu_boost/parameters/input_boost_freq "0:1036800"
-	write /sys/module/cpu_boost/parameters/input_boost_enabled 1
-	write /sys/module/cpu_boost/parameters/input_boost_ms 0
+    # Enable input boost configuration
+    write /sys/module/cpu_boost/parameters/input_boost_freq "0:1324800"
+    write /sys/module/cpu_boost/parameters/input_boost_ms 40
 
     # Enable bus-dcvs
     write /sys/class/devfreq/soc:qcom,cpubw/governor "bw_hwmon"
@@ -142,17 +184,10 @@ on property:sys.boot_completed=1
     # Disable sched boost
     write /proc/sys/kernel/sched_boost 0
 
-    # Adjust LMK Values
-	write /sys/module/lowmemorykiller/parameters/minfree "18432,23040,27648,32256,55296,80640"
-
-    # Set moar writeback stuffs
-    write /proc/sys/vm/dirty_ratio 20
-    write /proc/sys/vm/dirty_background_ratio 10
-
-    # Treat storage as non-rotational
-    write /sys/block/sda/queue/rotational 0
-
-    write /sys/class/power_supply/usb/otg_switch 1
+    # Enable Adaptive LMK
+    write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
+    write /sys/module/lowmemorykiller/parameters/minfree "18432,23040,27648,51256,150296,200640"
+    write /sys/module/lowmemorykiller/parameters/vmpressure_file_min 162500
 
     # Set up big.LITTLE scheduler configuration
     write /proc/sys/kernel/sched_migration_fixup 1
@@ -167,8 +202,8 @@ on property:sys.boot_completed=1
     write /proc/sys/kernel/sched_restrict_cluster_spill 1
     write /proc/sys/kernel/sched_prefer_sync_wakee_to_waker 1
 
-     # Toggle Sched Features
-	write /sys/kernel/debug/sched_features "NO_FBT_STRICT_ORDER"
+    # Set BFQ I/O scheduler
+    setprop sys.io.scheduler "bfq"
 
     # Is IOP even still a thing?
     start vendor.iop
