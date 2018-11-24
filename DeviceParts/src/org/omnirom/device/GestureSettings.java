@@ -121,7 +121,7 @@ public class GestureSettings extends PreferenceFragment implements
 
         mProxiSwitch = (TwoStatePreference) findPreference(KEY_PROXI_SWITCH);
         mProxiSwitch.setChecked(Settings.System.getInt(getContext().getContentResolver(),
-                Settings.System.OMNI_DEVICE_PROXI_CHECK_ENABLED, 1) != 0);
+                Settings.System.CUSTOM_DEVICE_PROXI_CHECK_ENABLED, 1) != 0);
 
         mDoubleSwipeApp = (AppSelectListPreference) findPreference(KEY_DOUBLE_SWIPE_APP);
         mDoubleSwipeApp.setEnabled(isGestureSupported(KEY_DOUBLE_SWIPE_APP));
@@ -232,7 +232,7 @@ public class GestureSettings extends PreferenceFragment implements
     public boolean onPreferenceTreeClick(Preference preference) {
         if (preference == mProxiSwitch) {
             Settings.System.putInt(getContext().getContentResolver(),
-                    Settings.System.OMNI_DEVICE_PROXI_CHECK_ENABLED, mProxiSwitch.isChecked() ? 1 : 0);
+                    Settings.System.CUSTOM_DEVICE_PROXI_CHECK_ENABLED, mProxiSwitch.isChecked() ? 1 : 0);
             return true;
         }
         return super.onPreferenceTreeClick(preference);
