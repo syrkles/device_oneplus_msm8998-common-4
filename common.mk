@@ -461,4 +461,4 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/wifi/wifi_concurrency_cfg.txt:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wifi_concurrency_cfg.txt
 
 # Inherit from oneplus-extras
-$(call inherit-product, device/oneplus/extras/common.mk)
+#$(call inherit-product, device/oneplus/extras/common.mk)

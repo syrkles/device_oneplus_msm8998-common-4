@@ -54,12 +54,12 @@ import android.view.KeyEvent;
 import android.view.HapticFeedbackConstants;
 import android.view.WindowManagerGlobal;
 
-import com.android.internal.os.DeviceKeyHandler;
+import com.android.internal.os.AlternativeDeviceKeyHandler;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.bootleggers.BootlegUtils;
 import com.android.internal.statusbar.IStatusBarService;
 
-public class KeyHandler implements DeviceKeyHandler {
+public class KeyHandler implements AlternativeDeviceKeyHandler {
 
     private static final String TAG = "KeyHandler";
     private static final boolean DEBUG = false;
