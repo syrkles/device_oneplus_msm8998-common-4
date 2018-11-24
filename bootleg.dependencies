@@ -1,0 +1,17 @@
+[
+  {
+    "repository":  "BootlegRom-Devices/device_oneplus_extras",
+    "target_path": "device/oneplus/extras",
+    "branch":      "pasta"
+  },
+  {
+    "repository":  "gitlab.com/Syrkles/zerof-cksgiven",
+    "target_path": "kernel/oneplus/msm8998",
+    "branch":      "9.0-treble"
+  },
+  {
+    "repository":  "Syrkles/proprietary_vendor_oneplus",
+    "target_path": "vendor/oneplus",
+    "branch":      "pie"
+  }
+]
